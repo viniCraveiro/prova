@@ -1,65 +1,62 @@
 package br.edu.unicesumar.prova.restcontroller;
 
-import br.edu.unicesumar.prova.domain.computador.Computador;
-import br.edu.unicesumar.prova.domain.computador.ComputadorRepository;
-import br.edu.unicesumar.prova.domain.periferico.Periferico;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import static br.edu.unicesumar.prova.restcontroller.ComputadorValidator.validate;
 
 import java.util.List;
 import java.util.UUID;
 
-import static br.edu.unicesumar.prova.restcontroller.ComputadorValidator.validate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.edu.unicesumar.prova.domain.computador.Computador;
+import br.edu.unicesumar.prova.domain.computador.ComputadorService;
 
 @RestController
 @RequestMapping("/api/computador")
 public class ComputadorRestController {
 
-    private final ComputadorRepository computadorRepository;
+    private final ComputadorService computadorService;
 
-    public ComputadorRestController(ComputadorRepository computadorRepository) {
-        this.computadorRepository = computadorRepository;
+    public ComputadorRestController(ComputadorService computadorService) {
+        this.computadorService = computadorService;
     }
 
     @PostMapping()
-    public ResponseEntity<Computador> cadastrar(@RequestBody Computador entidade) {
-        validate(entidade);
-        Computador saved = computadorRepository.save(entidade);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    public ResponseEntity<Computador> cadastrar(@RequestBody Computador computador) {
+        validate(computador);
+        Computador salvo = computadorService.salvarComputador(computador);
+        return new ResponseEntity<>(salvo, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Computador> findById(@PathVariable UUID id) {
-        Computador computador = computadorRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Computador não encontrado."));
+        Computador computador = computadorService.findById(id);
         return new ResponseEntity<>(computador, HttpStatus.OK);
     }
 
     @GetMapping()
     public ResponseEntity<List<Computador>> listAll() {
-        List<Computador> computadors = computadorRepository.findAll();
-        return new ResponseEntity<>(computadors, HttpStatus.OK);
+        List<Computador> computadores = computadorService.findAll();
+        return new ResponseEntity<>(computadores, HttpStatus.OK);
     }
 
     @PutMapping()
     public ResponseEntity<Computador> editar(@RequestBody Computador editado) {
-        Computador computadorRecuperado = computadorRepository.findById(editado.getId()).orElseThrow(() -> new EntityNotFoundException("Computador não encontrado."));
-        validate(editado);
-        computadorRecuperado.setCor(editado.getCor());
-        computadorRecuperado.setNome(editado.getNome());
-        computadorRecuperado.setDataFabricacao(editado.getDataFabricacao());
-        computadorRecuperado.getPerifericos().clear();
-        for (Periferico periferico : editado.getPerifericos()) {
-            computadorRecuperado.addPeriferico(periferico);
-        }
-        computadorRepository.save(computadorRecuperado);
-        return new ResponseEntity<>(new Computador(computadorRecuperado), HttpStatus.OK);
+        Computador atualizado = computadorService.update(editado);
+        return new ResponseEntity<>(new Computador(atualizado), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        computadorRepository.deleteById(id);
+        computadorService.deleteById(id);
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 

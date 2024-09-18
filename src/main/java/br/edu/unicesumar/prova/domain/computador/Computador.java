@@ -1,14 +1,18 @@
 package br.edu.unicesumar.prova.domain.computador;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import br.edu.unicesumar.prova.domain.Entidade;
 import br.edu.unicesumar.prova.domain.periferico.Periferico;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -24,7 +28,7 @@ public class Computador extends Entidade {
     private Long dataFabricacao;
 
     @OneToMany(mappedBy = "computador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<Periferico> perifericos = new HashSet<>();
+    private List<Periferico> perifericos = new ArrayList<>();
 
     public Computador() {
     }
